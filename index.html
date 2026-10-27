@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สมการ & อสมการ ม.1 | ตาชั่งสามมิติ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#0b1630;--bg2:#17305f;--gold:#ffca32;--teal:#37d3b0;--rose:#ff6b7a;--ink:#eaf1ff;--mut:#9fb3d9;--glass:rgba(255,255,255,.08);--edge:rgba(255,255,255,.16)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Noto Sans Thai",Tahoma,sans-serif;color:var(--ink);background:radial-gradient(circle at 25% 15%,var(--bg2),var(--bg1) 70%);overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:16px;padding:16px}
+.stage{position:relative;border-radius:26px;overflow:hidden;border:1px solid var(--edge);background:linear-gradient(180deg,#1b3a73,#0e1d3f);box-shadow:0 20px 50px #0008}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.title{position:absolute;left:20px;top:18px;padding:12px 18px;border-radius:18px;background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.title h1{margin:0;font-size:20px;font-weight:800}
+.title p{margin:3px 0 0;font-size:12px;color:var(--mut)}
+.hint{position:absolute;right:18px;top:18px;padding:8px 14px;border-radius:30px;font-size:12px;color:var(--mut);background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.hs{position:absolute;left:0;top:0;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:30px;min-width:44px;height:36px;padding:0 12px;font-weight:800;font-size:15px;background:rgba(255,202,50,.92);color:#2a2100;box-shadow:0 0 0 0 rgba(255,202,50,.7);animation:pulse 2s infinite;z-index:3}
+.hs.l{background:rgba(55,211,176,.95);color:#04332a;box-shadow:0 0 0 0 rgba(55,211,176,.7)}
+.hs.r{background:rgba(255,107,122,.95);color:#3a0710;box-shadow:0 0 0 0 rgba(255,107,122,.7)}
+.hs.on{animation:none;transform:translate(-50%,-50%) scale(1.15)}
+@keyframes pulse{70%{box-shadow:0 0 0 14px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.card{position:absolute;left:20px;bottom:20px;width:min(360px,calc(100% - 40px));padding:16px 18px;border-radius:20px;background:rgba(10,22,48,.72);border:1px solid var(--edge);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);z-index:4;transition:opacity .25s,transform .25s}
+.card.hide{opacity:0;transform:translateY(16px);pointer-events:none}
+.card.swap{animation:swap .35s}
+@keyframes swap{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.card h3{margin:0 0 6px;font-size:16px;color:var(--gold)}
+.card p{margin:0;font-size:13.5px;line-height:1.7}
+.card .x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:18px;color:var(--mut)}
+.panel{display:flex;flex-direction:column;gap:12px;overflow:auto;padding-right:2px;scrollbar-width:thin}
+.box{background:var(--glass);border:1px solid var(--edge);border-radius:22px;padding:16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.box h2{margin:0 0 10px;font-size:15px;font-weight:800}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:18px;background:rgba(0,0,0,.25)}
+.tab{border:0;border-radius:14px;padding:11px;font-weight:800;background:none;color:var(--mut);transition:.25s}
+.tab.on{background:linear-gradient(120deg,var(--gold),#ffa928);color:#2a2100;box-shadow:0 6px 16px #ffb82a44}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--edge);background:rgba(255,255,255,.06);border-radius:30px;padding:7px 14px;font-weight:600;font-size:14px;transition:.2s}
+.chip.on{background:var(--teal);color:#04332a;border-color:var(--teal)}
+.eqt{font-size:30px;font-weight:800;text-align:center;padding:6px 0 2px;letter-spacing:.5px}
+.eqt b{color:var(--gold)}
+.sub{text-align:center;font-size:14px;color:var(--mut);min-height:24px}
+.sl{display:flex;align-items:center;gap:12px;margin-top:12px}
+.sl output{min-width:62px;text-align:center;font-weight:800;font-size:18px;padding:6px 10px;border-radius:12px;background:rgba(255,202,50,.16);color:var(--gold)}
+input[type=range]{flex:1;accent-color:var(--gold);height:30px}
+.badge{margin-top:12px;padding:11px 14px;border-radius:14px;font-weight:700;font-size:14px;text-align:center;transition:background .3s,color .3s}
+.badge.ok{background:rgba(55,211,176,.2);color:var(--teal)}
+.badge.no{background:rgba(255,107,122,.16);color:#ffb0b8}
+.badge.ok.pop{animation:swap .4s}
+svg.nl{width:100%;height:auto;display:block}
+.def{font-size:13.5px;line-height:1.75;color:#d4e1ff}
+.def+.def{margin-top:8px}
+.def strong{color:var(--gold)}
+.ans{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(55,211,176,.18);color:var(--teal);font-size:13.5px}
+.ans.show{display:block;animation:swap .3s}
+.row{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;border:0;border-radius:14px;padding:10px;font-weight:800;background:linear-gradient(120deg,#5aa8ff,#3d7cf0);color:#fff}
+.btn.alt{background:rgba(255,255,255,.12)}
+@media(max-width:900px){body{overflow:auto}.app{height:auto;grid-template-columns:1fr;padding:12px}.stage{height:62vh;min-height:420px}.panel{overflow:visible}.hint{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mb{border:1px solid var(--edge);background:rgba(255,255,255,.06);border-radius:12px;padding:9px 6px;font-size:13px;font-weight:600;transition:.2s}
+.mb.on{background:var(--teal);color:#04332a;border-color:var(--teal)}
+.hhint{font-size:13px;color:var(--mut);margin:10px 0;min-height:40px;line-height:1.6}
+.hstat{margin-top:10px;font-size:13px;padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.25);min-height:36px;line-height:1.6}
+.hpriv{font-size:12px;color:var(--mut);margin-top:8px;line-height:1.6}
+.cam{position:absolute;right:16px;top:64px;width:200px;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:2px solid var(--teal);z-index:5;transform:scaleX(-1);background:#000;box-shadow:0 10px 26px #0008}
+.cam.hide{display:none}
+.cam video,.cam canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cur{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:3px solid #fff;background:conic-gradient(var(--gold) calc(var(--p,0)*1%),rgba(255,255,255,.18) 0);pointer-events:none;z-index:6;display:none;box-shadow:0 0 14px #0008}
+.badge.flash{animation:swap .5s}
+@media(max-width:900px){.cam{width:130px;top:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage" id="stage">
+    <canvas id="view" aria-label="ตาชั่งสามมิติ"></canvas>
+    <div class="title"><h1>🧮 ตาชั่งสมการ ม.1</h1><p>สมการและอสมการเชิงเส้นตัวแปรเดียว</p></div>
+    <div class="hint">ลากเพื่อหมุน · ลูกกลิ้งเพื่อซูม · คลิกจุดเรืองแสง</div>
+    <button class="hs l" id="hsL" aria-label="ดูข้อมูลฝั่งซ้าย"></button>
+    <button class="hs" id="hsP" aria-label="ดูข้อมูลจุดหมุน"></button>
+    <button class="hs r" id="hsR" aria-label="ดูข้อมูลฝั่งขวา"></button>
+    <div class="cam hide" id="cam"><video id="cv" playsinline muted></video><canvas id="cc"></canvas></div>
+    <div class="cur" id="cur"></div>
+    <div class="card hide" id="card" role="dialog"><button class="x" id="cardX" aria-label="ปิด">✕</button><h3 id="cardT"></h3><p id="cardB"></p></div>
+  </section>
+  <aside class="panel">
+    <div class="tabs"><button class="tab on" id="tEq">สมการ</button><button class="tab" id="tIn">อสมการ</button></div>
+    <div class="box" id="hbox">
+      <h2>🖐️ ควบคุมด้วยมือ</h2>
+      <div class="modes">
+        <button class="mb on" data-m="pinch">🤏 บีบนิ้ว</button>
+        <button class="mb" data-m="count">🖐️ นับนิ้ว</button>
+        <button class="mb" data-m="gesture">👍 ท่ามือสั่งงาน</button>
+        <button class="mb" data-m="point">👆 ชี้นิ้ว</button>
+      </div>
+      <div class="hhint" id="hHint"></div>
+      <button class="btn" id="hBtn" style="width:100%">📷 เปิดกล้อง</button>
+      <div class="hstat" id="hStat">ปิดกล้องอยู่ ยังใช้ slider ได้ตามปกติ</div>
+      <div class="hpriv">ประมวลผลในเบราว์เซอร์ ไม่ส่งภาพออกไปที่ไหน กดปิดกล้องได้ทุกเมื่อ</div>
+    </div>
+    <div class="box">
+      <h2>เลือกโจทย์</h2>
+      <div class="chips" id="chips"></div>
+      <div class="eqt" id="eqt"></div>
+      <div class="sub" id="sub"></div>
+      <div class="sl"><span>x =</span><input type="range" id="rng" min="0" max="12" step="1" value="0" aria-label="ค่า x"><output id="out">0</output></div>
+      <div class="badge no" id="badge"></div>
+    </div>
+    <div class="box"><h2>เส้นจำนวน</h2><svg class="nl" id="nl" viewBox="0 0 380 92" role="img" aria-label="เส้นจำนวน"></svg></div>
+    <div class="box">
+      <h2>สรุปเนื้อหา</h2>
+      <div class="def"><strong>สมการเชิงเส้นตัวแปรเดียว</strong> คือสมการที่มีตัวแปรเดียว และตัวแปรมีเลขชี้กำลังเป็น 1</div>
+      <div class="def"><strong>อสมการเชิงเส้นตัวแปรเดียว</strong> คือประโยคสัญลักษณ์ที่ใช้ &lt;, &gt;, ≤ หรือ ≥</div>
+    </div>
+    <div class="box">
+      <h2>⭐ คำถามวันนี้</h2>
+      <div class="def">ถ้า 2x + 3 = 11 แล้ว x มีค่าเท่าไร?</div>
+      <div class="ans" id="ans">เฉลย x = 4 เพราะ 2x = 8 แล้วหารทั้งสองข้างด้วย 2</div>
+      <div class="row"><button class="btn alt" id="bAns">ดูเฉลย</button><button class="btn" id="bTry">ลองบนตาชั่ง</button></div>
+    </div>
+  </aside>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const PROB={eq:[[2,3,'=',11],[3,2,'=',14],[4,1,'=',17]],ineq:[[3,2,'>',11],[2,1,'≤',9],[5,0,'<',20]]};
+const S={mode:'eq',idx:0,x:0};
+const $=id=>document.getElementById(id);
+const stage=$('stage'),canvas=$('view');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.outputEncoding=THREE.sRGBEncoding;
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x0e1d3f,14,30);
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);
+camera.position.set(0,5.2,10.5);
+const controls=new THREE.OrbitControls(camera,canvas);
+controls.target.set(0,2.6,0);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=5;controls.maxDistance=18;controls.maxPolarAngle=Math.PI/2.02;controls.update();
+scene.add(new THREE.HemisphereLight(0xcfe0ff,0x1a2a55,.9));
+const sun=new THREE.DirectionalLight(0xffffff,1.15);
+sun.position.set(5,10,6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+const sc=sun.shadow.camera;sc.left=-8;sc.right=8;sc.top=8;sc.bottom=-8;sc.near=1;sc.far=30;sun.shadow.bias=-.0004;
+scene.add(sun);
+const rim=new THREE.PointLight(0x55b4ff,1.1,25);rim.position.set(-6,4,-5);scene.add(rim);
+const M=(c,r,m)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const floor=new THREE.Mesh(new THREE.CircleGeometry(9,64),M(0x1d3a75,.55,.15));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const ring=new THREE.Mesh(new THREE.RingGeometry(3.2,3.28,96),new THREE.MeshBasicMaterial({color:0x6fb2ff,transparent:true,opacity:.5,side:THREE.DoubleSide}));
+ring.rotation.x=-Math.PI/2;ring.position.y=.01;scene.add(ring);
+const metal=M(0xdfe8ff,.25,.8),brass=M(0xffca32,.3,.7);
+const base=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.8,.4,48),metal);base.position.y=.2;base.castShadow=base.receiveShadow=true;scene.add(base);
+const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.14,.2,3.4,32),metal);pillar.position.y=2;pillar.castShadow=true;scene.add(pillar);
+const PIV=3.7,HALF=2.5,HANG=1.7;
+const cap=new THREE.Mesh(new THREE.SphereGeometry(.3,32,32),brass);cap.position.set(0,PIV,0);cap.castShadow=true;scene.add(cap);
+const beam=new THREE.Group();beam.position.set(0,PIV,0);scene.add(beam);
+const bm=new THREE.Mesh(new THREE.BoxGeometry(HALF*2,.16,.2),brass);bm.castShadow=true;beam.add(bm);
+[-1,1].forEach(s=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.14,24,24),metal);e.position.x=s*HALF;beam.add(e)});
+const tip=new THREE.Mesh(new THREE.ConeGeometry(.09,.7,16),M(0xff6b7a,.4,.2));tip.position.y=.4;beam.add(tip);
+function makePan(col){
+  const g=new THREE.Group();
+  const cord=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,HANG,8),metal);cord.position.y=HANG/2;g.add(cord);
+  const dish=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.15,.12,48),M(col,.35,.45));dish.castShadow=dish.receiveShadow=true;g.add(dish);
+  const lip=new THREE.Mesh(new THREE.TorusGeometry(1.35,.04,12,64),brass);lip.rotation.x=Math.PI/2;lip.position.y=.06;g.add(lip);
+  const items=new THREE.Group();items.position.y=.06;g.add(items);
+  g.userData.items=items;scene.add(g);return g;
+}
+const panL=makePan(0x37d3b0),panR=makePan(0xff6b7a);
+const gm=new THREE.MeshStandardMaterial({color:0xffca32,roughness:.3,metalness:.35});
+const cm=new THREE.MeshStandardMaterial({color:0x5ee0c2,roughness:.25,metalness:.2});
+const rm=new THREE.MeshStandardMaterial({color:0xff9aa6,roughness:.25,metalness:.2});
+function cubes(group,n,cx,cz,mat){
+  for(let i=0;i<n;i++){
+    const c=i%5,r=Math.floor(i/5)%3,l=Math.floor(i/15);
+    const m=new THREE.Mesh(new THREE.BoxGeometry(.22,.22,.22),mat);
+    m.position.set(cx+(c-2)*.27,.11+l*.24,cz+(r-1)*.27);m.castShadow=true;group.add(m);
+  }
+}
+function fill(){
+  const [a,b,op,c]=PROB[S.mode][S.idx];
+  const L=panL.userData.items,R=panR.userData.items;
+  while(L.children.length)L.remove(L.children[0]);
+  while(R.children.length)R.remove(R.children[0]);
+  const h=.12+S.x*.14;
+  for(let i=0;i<a;i++){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(.42,h,.42),gm);
+    m.position.set((i-(a-1)/2)*.5,h/2,-.5);m.castShadow=true;L.add(m);
+  }
+  cubes(L,b,0,.45,cm);
+  cubes(R,c,0,0,rm);
+}
+let tilt=0,tgt=0;
+function place(){
+  const ca=Math.cos(tilt),sa=Math.sin(tilt);
+  panL.position.set(-HALF*ca,PIV-HALF*sa-HANG,0);
+  panR.position.set(HALF*ca,PIV+HALF*sa-HANG,0);
+  beam.rotation.z=tilt;
+}
+function calc(){
+  const [a,b,op,c]=PROB[S.mode][S.idx];const L=a*S.x+b;
+  let ok=false;
+  if(op==='=')ok=L===c;else if(op==='>')ok=L>c;else if(op==='<')ok=L<c;else if(op==='≥')ok=L>=c;else ok=L<=c;
+  return{a,b,op,c,L,ok};
+}
+function term(a,b){return a+'x'+(b?' + '+b:'')}
+function proj(v,el){
+  const p=v.clone().project(camera);
+  const w=stage.clientWidth,h=stage.clientHeight;
+  el.style.left=((p.x+1)/2*w)+'px';el.style.top=((1-p.y)/2*h)+'px';
+  el.style.visibility=p.z<1?'visible':'hidden';
+}
+const INFO={
+  L:()=>{const r=calc();return['ฝั่งซ้าย: '+term(r.a,r.b),'ก้อนสีทองคือ x มี '+r.a+' ก้อน ความสูงของก้อนบอกค่า x ปัจจุบัน ('+S.x+') ส่วนลูกบาศก์สีเขียวคือค่าคงที่ '+r.b+' หน่วย น้ำหนักรวมฝั่งนี้คือ '+r.L]},
+  R:()=>{const r=calc();return['ฝั่งขวา: '+r.c,'ลูกบาศก์สีชมพูแทนค่าคงที่ '+r.c+' หน่วย น้ำหนักฝั่งนี้ไม่เปลี่ยนเมื่อเลื่อน x ใช้เป็นตัวเทียบกับฝั่งซ้าย']},
+  P:()=>{const r=calc();return S.mode==='eq'?['จุดหมุนคือเครื่องหมาย "="','ตาชั่งสมดุลเมื่อสองฝั่งเท่ากัน คือเมื่อ x ทำให้สมการเป็นจริง ถ้าฝั่งใดหนักกว่า คานจะเอียงลงฝั่งนั้น']:['จุดหมุนคือเครื่องหมาย "'+r.op+'"','คานเอียงบอกว่าฝั่งไหนมากกว่า ลองเลื่อน x แล้วดูว่าค่าใดทำให้ประโยค '+term(r.a,r.b)+' '+r.op+' '+r.c+' เป็นจริง']}
+};
+let cur=null;
+function showCard(k){
+  const card=$('card');
+  if(cur===k){hideCard();return}
+  cur=k;const [t,b]=INFO[k]();
+  $('cardT').textContent=t;$('cardB').textContent=b;
+  card.classList.remove('hide','swap');void card.offsetWidth;card.classList.add('swap');
+  [['L','hsL'],['P','hsP'],['R','hsR']].forEach(([q,id])=>$(id).classList.toggle('on',q===k));
+}
+function hideCard(){cur=null;$('card').classList.add('hide');['hsL','hsP','hsR'].forEach(i=>$(i).classList.remove('on'))}
+$('hsL').onclick=()=>showCard('L');$('hsP').onclick=()=>showCard('P');$('hsR').onclick=()=>showCard('R');$('cardX').onclick=hideCard;
+const X0=24,XW=332;
+function px(v){return X0+v/12*XW}
+function drawLine(r){
+  const [a,b,op,c]=PROB[S.mode][S.idx];
+  const x0=(c-b)/a;let s='<line x1="14" y1="48" x2="366" y2="48" stroke="#9fb3d9" stroke-width="3" stroke-linecap="round"/>';
+  if(op!=='='){
+    const right=(op==='>'||op==='≥');
+    const xa=right?px(x0):X0-6,xb=right?X0+XW+6:px(x0);
+    s+='<rect x="'+xa+'" y="42" width="'+(xb-xa)+'" height="12" rx="6" fill="#37d3b0" opacity=".7"/>';
+  }
+  for(let i=0;i<=12;i++)s+='<line x1="'+px(i)+'" y1="43" x2="'+px(i)+'" y2="53" stroke="#9fb3d9" stroke-width="2"/><text x="'+px(i)+'" y="72" fill="#cfe0ff" font-size="12" text-anchor="middle">'+i+'</text>';
+  const closed=op==='='||op==='≥'||op==='≤';
+  s+='<circle cx="'+px(x0)+'" cy="48" r="8" fill="'+(closed?'#37d3b0':'#0e1d3f')+'" stroke="#37d3b0" stroke-width="3"/>';
+  s+='<text x="'+px(x0)+'" y="28" fill="#37d3b0" font-size="12" font-weight="700" text-anchor="middle">x'+(op==='='?' = ':' '+op+' ')+x0+'</text>';
+  s+='<path d="M'+px(S.x)+' 50 l-7 -13 h14z" fill="'+(r.ok?'#ffca32':'#ff6b7a')+'" transform="translate(0,0)"/><circle cx="'+px(S.x)+'" cy="48" r="4" fill="#fff"/>';
+  $('nl').innerHTML=s;
+}
+let wasOk=false;
+function update(){
+  const r=calc();
+  $('eqt').innerHTML=term(r.a,r.b).replace('x','<b>x</b>')+' '+r.op+' '+r.c;
+  $('sub').textContent=r.a+'('+S.x+')'+(r.b?' + '+r.b:'')+' = '+r.L+' เทียบกับ '+r.c;
+  $('out').textContent=S.x;$('rng').value=S.x;
+  const b=$('badge');
+  b.className='badge '+(r.ok?'ok':'no');
+  if(r.ok){
+    b.textContent=S.mode==='eq'?'✓ ถูกต้อง! ตาชั่งสมดุล x = '+S.x+' คือคำตอบ':'✓ x = '+S.x+' เป็นคำตอบของอสมการ';
+    if(!wasOk){b.classList.add('pop')}
+  }else{
+    b.textContent=S.mode==='eq'?(r.L>r.c?'ฝั่งซ้ายหนักไป ลองลดค่า x':'ฝั่งซ้ายเบาไป ลองเพิ่มค่า x'):'x = '+S.x+' ไม่เป็นคำตอบ ลองเลื่อนดูอีกครั้ง';
+  }
+  wasOk=r.ok;
+  tgt=Math.max(-.38,Math.min(.38,(r.L-r.c)*.035));
+  $('hsL').textContent=r.L;$('hsR').textContent=r.c;
+  $('hsP').textContent=S.mode==='eq'?(r.ok?'=':'≠'):r.op;
+  fill();drawLine(r);
+  if(cur){const k=cur;cur=null;showCard(k)}
+}
+function chips(){
+  const c=$('chips');c.innerHTML='';
+  PROB[S.mode].forEach((p,i)=>{
+    const b=document.createElement('button');b.className='chip'+(i===S.idx?' on':'');
+    b.textContent=term(p[0],p[1])+' '+p[2]+' '+p[3];
+    b.onclick=()=>{S.idx=i;S.x=0;chips();update()};
+    c.appendChild(b);
+  });
+}
+function setMode(m){
+  S.mode=m;S.idx=0;S.x=0;
+  $('tEq').classList.toggle('on',m==='eq');$('tIn').classList.toggle('on',m==='ineq');
+  chips();update();
+}
+$('tEq').onclick=()=>setMode('eq');$('tIn').onclick=()=>setMode('ineq');
+$('rng').oninput=e=>{S.x=+e.target.value;update()};
+$('bAns').onclick=()=>{const a=$('ans');a.classList.toggle('show');$('bAns').textContent=a.classList.contains('show')?'ซ่อนเฉลย':'ดูเฉลย'};
+$('bTry').onclick=()=>{setMode('eq');S.x=4;update();showCard('P')};
+function resize(){
+  const w=stage.clientWidth,h=stage.clientHeight;
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+const clock=new THREE.Clock();
+function loop(){
+  requestAnimationFrame(loop);
+  const d=Math.min(clock.getDelta(),.05);
+  tilt+=(tgt-tilt)*Math.min(1,d*5);
+  place();
+  controls.update();
+  proj(new THREE.Vector3(panL.position.x,panL.position.y+1.1,0),$('hsL'));
+  proj(new THREE.Vector3(panR.position.x,panR.position.y+1.1,0),$('hsR'));
+  proj(new THREE.Vector3(0,PIV+.9,0),$('hsP'));
+  renderer.render(scene,camera);
+}
+window.EQ={S,PROB,update,chips,showCard,hideCard,setMode};
+resize();setMode('eq');
+loop();
+</script>
+<script type="module">
+const E=window.EQ,$=id=>document.getElementById(id);
+const V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const MODEL='https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task';
+const HINT={pinch:'บีบนิ้วโป้งกับนิ้วชี้ให้ชิดกัน = 0 กางออกสุด = 12 แล้วดูตาชั่งเอียงตาม',count:'ชูนิ้วด้วยสองมือเพื่อนับ 0–10 ถ้าต้องการ 11–12 ให้ใช้ slider',gesture:'👍 ตรวจคำตอบ · ✋ ดู/ซ่อนเฉลย · ✊ รีเซ็ต x · ✌️ ข้อถัดไป (ค้างท่าไว้ครู่หนึ่ง)',point:'ชี้นิ้วค้างที่จุดเรืองแสงประมาณ 1 วินาที เพื่อเปิดการ์ดอธิบาย'};
+const GTH={Thumb_Up:'👍 ตรวจคำตอบ',Open_Palm:'✋ ดู/ซ่อนเฉลย',Closed_Fist:'✊ รีเซ็ต x',Victory:'✌️ ข้อถัดไป'};
+const stage=$('stage'),video=$('cv'),cc=$('cc'),ctx=cc.getContext('2d'),cur=$('cur'),stat=$('hStat');
+let mode='pinch',rec=null,lib=null,du=null,stream=null,running=false,last=0,lastT=-1;
+let sm=0,cnt=0,cntN=0,gName='',gN=0,fired='',px=0,py=0,dKey='',dStart=0,lock='';
+const d=(a,b,ar)=>Math.hypot((a.x-b.x)*ar,a.y-b.y);
+function setX(v){if(v!==E.S.x){E.S.x=v;E.update()}}
+function setHint(){$('hHint').textContent=HINT[mode];cur.style.display='none'}
+document.querySelectorAll('.mb').forEach(b=>b.onclick=async()=>{
+  mode=b.dataset.m;
+  document.querySelectorAll('.mb').forEach(x=>x.classList.toggle('on',x===b));
+  gName='';gN=0;fired='';cntN=0;lock='';dKey='';setHint();
+  if(rec)await rec.setOptions({numHands:mode==='count'?2:1});
+});
+function act(name){
+  if(name==='Thumb_Up'){
+    E.update();const b=$('badge');b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash');
+    E.hideCard();E.showCard('P');stat.textContent='👍 '+b.textContent;
+  }else if(name==='Open_Palm'){$('bAns').click()}
+  else if(name==='Closed_Fist'){setX(0)}
+  else if(name==='Victory'){const n=E.PROB[E.S.mode].length;E.S.idx=(E.S.idx+1)%n;E.S.x=0;E.chips();E.update()}
+}
+function doPinch(L,r,ar){
+  const h=L[0],t=Math.max(0,Math.min(1,(d(h[4],h[8],ar)/d(h[0],h[9],ar)-.15)/1.05));
+  sm+=(t-sm)*.35;const f=sm*12;
+  if(Math.abs(f-E.S.x)>.65)setX(Math.round(f));
+  stat.textContent='🤏 บีบนิ้ว → x = '+E.S.x;
+}
+function doCount(L,r,ar){
+  let n=0;
+  L.forEach(h=>{
+    [[8,6],[12,10],[16,14],[20,18]].forEach(([a,b])=>{if(d(h[a],h[0],ar)>d(h[b],h[0],ar)*1.12)n++});
+    if(d(h[4],h[17],ar)>d(h[3],h[17],ar)*1.1)n++;
+  });
+  n=Math.min(n,10);
+  if(n===cnt)cntN++;else{cnt=n;cntN=1}
+  if(cntN>=5)setX(cnt);
+  stat.textContent='🖐️ นับได้ '+n+' นิ้ว → x = '+E.S.x;
+}
+function doGesture(L,r){
+  const g=r.gestures[0]&&r.gestures[0][0],name=g&&g.score>.6&&GTH[g.categoryName]?g.categoryName:'';
+  stat.textContent=name?GTH[name]:'รอท่ามือ…';
+  if(!name){gName='';gN=0;fired='';return}
+  if(name===gName)gN++;else{gName=name;gN=1;fired=''}
+  if(gN>=8&&fired!==name){fired=name;act(name)}
+}
+function doPoint(L,r,ar,t){
+  const tip=L[0][8],W=stage.clientWidth,H=stage.clientHeight;
+  const nx=Math.max(0,Math.min(1,((1-tip.x)-.5)*1.5+.5))*W,ny=Math.max(0,Math.min(1,(tip.y-.5)*1.5+.5))*H;
+  px+=(nx-px)*.4;py+=(ny-py)*.4;
+  cur.style.display='block';cur.style.left=px+'px';cur.style.top=py+'px';
+  const sr=stage.getBoundingClientRect();let hit='';
+  [['L','hsL'],['P','hsP'],['R','hsR']].forEach(([k,id])=>{
+    const q=$(id).getBoundingClientRect();
+    if(Math.hypot(q.left+q.width/2-sr.left-px,q.top+q.height/2-sr.top-py)<48)hit=k;
+  });
+  if(hit!==dKey){dKey=hit;dStart=t}
+  const p=hit?Math.min((t-dStart)/1000,1):0;
+  cur.style.setProperty('--p',p*100);
+  if(!hit)lock='';
+  if(p>=1&&lock!==hit){lock=hit;E.showCard(hit)}
+  stat.textContent=hit?'👆 กำลังเลือกจุดนี้…':'👆 เลื่อนนิ้วไปที่จุดเรืองแสง';
+}
+const DO={pinch:doPinch,count:doCount,gesture:doGesture,point:doPoint};
+function loop(){
+  if(!running)return;
+  requestAnimationFrame(loop);
+  const t=performance.now();
+  if(t-last<40||video.readyState<2||video.currentTime===lastT)return;
+  last=t;lastT=video.currentTime;
+  const r=rec.recognizeForVideo(video,t),L=r.landmarks||[];
+  ctx.clearRect(0,0,cc.width,cc.height);
+  L.forEach(h=>{du.drawConnectors(h,lib.GestureRecognizer.HAND_CONNECTIONS,{color:'#37d3b0',lineWidth:3});du.drawLandmarks(h,{color:'#ffca32',radius:3})});
+  if(!L.length){stat.textContent='ไม่พบมือ ยกมือให้กล้องเห็น';cur.style.display='none';gN=0;cntN=0;lock='';dKey='';return}
+  DO[mode](L,r,cc.width/cc.height,t);
+}
+function stop(){
+  running=false;
+  if(stream)stream.getTracks().forEach(x=>x.stop());
+  stream=null;video.srcObject=null;
+  $('cam').classList.add('hide');cur.style.display='none';
+  $('hBtn').textContent='📷 เปิดกล้อง';
+}
+async function start(){
+  stat.textContent='กำลังโหลดโมเดล…';$('hBtn').disabled=true;
+  try{
+    if(!rec){
+      lib=await import(V+'/vision_bundle.mjs');
+      const fs=await lib.FilesetResolver.forVisionTasks(V+'/wasm');
+      const o=n=>({baseOptions:{modelAssetPath:MODEL,delegate:n},runningMode:'VIDEO',numHands:mode==='count'?2:1});
+      try{rec=await lib.GestureRecognizer.createFromOptions(fs,o('GPU'))}catch(e){rec=await lib.GestureRecognizer.createFromOptions(fs,o('CPU'))}
+      du=new lib.DrawingUtils(ctx);
+    }
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    video.srcObject=stream;await video.play();
+    cc.width=video.videoWidth;cc.height=video.videoHeight;
+    $('cam').classList.remove('hide');$('hBtn').textContent='⏹ ปิดกล้อง';
+    running=true;stat.textContent='พร้อมแล้ว ยกมือให้กล้องเห็น';loop();
+  }catch(e){
+    stop();
+    stat.textContent='เปิดไม่ได้: '+(e&&e.name==='NotAllowedError'?'ยังไม่ได้อนุญาตให้ใช้กล้อง':'ตรวจสอบอินเทอร์เน็ตและกล้อง')+' (ยังใช้ slider ได้ตามปกติ)';
+  }
+  $('hBtn').disabled=false;
+}
+$('hBtn').onclick=()=>{if(running){stop();stat.textContent='ปิดกล้องแล้ว ยังใช้ slider ได้ตามปกติ'}else start()};
+setHint();
+</script>
+</body>
+</html>
